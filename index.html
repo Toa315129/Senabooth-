@@ -5,17 +5,17 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Sena booth</title>
 
-<!-- ฟอนต์เขียนติดกัน -->
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
 
 <style>
 :root{
-  --bg:#ffffff;
+  --bg:#fffafc;
   --green:#a8d5ba;
-  --blue:#b8d9f4;
-  --pink:#f7c6d9;
-  --muted:#f0f4f8;
-  --text:#355c7d;
+  --blue:#cbe8ff;
+  --pink:#ffd6e8;
+  --yellow:#fff6b7;
+  --muted:#fdfdfd;
+  --text:#444b6e;
 }
 *{box-sizing:border-box}
 html,body{
@@ -35,12 +35,15 @@ html,body{
   overflow:hidden;
 }
 .header{text-align:center;margin-bottom:20px;}
-.header .brand{font-weight:400;font-size:56px;color:var(--text);text-shadow:1px 1px 0 var(--pink);}
+.header .brand{
+  font-weight:400;font-size:56px;color:var(--text);
+  text-shadow:2px 2px 0 var(--pink);
+}
 .main{display:flex;gap:18px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;}
 .camera-wrap{flex:1 1 360px;min-width:300px;display:flex;flex-direction:column;align-items:center;gap:12px;}
 .preview{
-  width:100%;border-radius:14px;overflow:hidden;
-  background:var(--muted);border:6px solid var(--green);
+  width:100%;border-radius:20px;overflow:hidden;
+  background:var(--muted);border:6px dashed var(--pink);
   box-shadow:0 6px 18px rgba(0,0,0,0.08);
   position:relative;aspect-ratio:3/4;
 }
@@ -54,12 +57,12 @@ html,body{
 .flash.show{opacity:0.85}
 .controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}
 .btn{
-  padding:10px 14px;border-radius:10px;border:2px solid var(--green);
+  padding:10px 14px;border-radius:14px;border:2px solid var(--green);
   background:var(--pink);color:var(--text);font-weight:700;cursor:pointer;
   box-shadow:0 4px 10px rgba(16,24,40,0.05);transition:all 0.2s ease;
   font-family:sans-serif;
 }
-.btn:hover:not(:disabled){background:var(--green);color:#fff;}
+.btn:hover:not(:disabled){background:var(--yellow);color:#444;}
 .btn:disabled{opacity:0.55;cursor:not-allowed}
 .shutter{
   width:84px;height:84px;border-radius:50%;background:#fff;border:6px solid var(--pink);
@@ -67,31 +70,31 @@ html,body{
   display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
   transition:all 0.2s;
 }
-.shutter:hover{background:var(--green);}
+.shutter:hover{background:var(--yellow);}
 .gallery{width:300px;min-width:260px;flex:0 0 300px;display:flex;flex-direction:column;gap:12px;align-items:center;}
 .thumbs{display:flex;gap:8px;width:100%;justify-content:space-between}
 .thumb{
-  width:32%;aspect-ratio:3/4;border-radius:10px;overflow:hidden;background:#fff;
-  border:3px solid var(--green);display:flex;align-items:center;justify-content:center;
+  width:32%;aspect-ratio:3/4;border-radius:14px;overflow:hidden;background:#fff;
+  border:3px dashed var(--green);display:flex;align-items:center;justify-content:center;
 }
-.thumb img{width:100%;height:100%;object-fit:cover}
+.thumb img{width:100%;height:100%;object-fit:cover;border-radius:12px;}
 @media(min-width:900px){
   .camera-wrap{flex:1 1 60%}
   .gallery{flex:0 0 36%;}
 }
 .note{font-family:sans-serif;font-size:14px;color:var(--text);text-align:center;margin-top:6px}
 
-/* ⭐ ตกแต่งหลายเหลี่ยม */
+/* ⭐ ดาวตกแต่ง */
 .decoration{
   position:absolute;z-index:0;
-  background:var(--pink);
+  background:var(--yellow);
   clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
-  width:120px;height:120px;
-  opacity:0.6;
+  width:90px;height:90px;
+  opacity:0.5;
 }
-.dec1{top:-30px;left:-30px;background:var(--pink);}
+.dec1{top:-20px;left:-20px;background:var(--pink);}
 .dec2{bottom:-40px;right:-40px;background:var(--green);}
-.dec3{top:20px;right:80px;background:var(--blue);}
+.dec3{top:20px;right:60px;background:var(--yellow);}
 </style>
 </head>
 <body>
@@ -232,7 +235,7 @@ fileInput.addEventListener('change',async(e)=>{
     });
   }
   retakeBtn.disabled=false;
-  downloadBtn.disabled=false?false:true;
+  downloadBtn.disabled=false; // ✅ แก้ตรงนี้
 });
 
 downloadBtn.addEventListener('click',async()=>{
@@ -242,21 +245,22 @@ downloadBtn.addEventListener('click',async()=>{
   const ctx=c.getContext('2d');
   ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,W,H);
 
-  // ⭐ ตกแต่งดาวในกรอบ
-  ctx.fillStyle='#f7c6d9';
-  ctx.beginPath();
-  ctx.moveTo(600,40);
-  ctx.lineTo(630,120);
-  ctx.lineTo(720,120);
-  ctx.lineTo(650,170);
-  ctx.lineTo(680,260);
-  ctx.lineTo(600,200);
-  ctx.lineTo(520,260);
-  ctx.lineTo(550,170);
-  ctx.lineTo(480,120);
-  ctx.lineTo(570,120);
-  ctx.closePath();
-  ctx.fill();
+  // ⭐ ดาวรอบกรอบ
+  function drawStar(x,y,r,color){
+    ctx.fillStyle=color;
+    ctx.beginPath();
+    for(let i=0;i<5;i++){
+      ctx.lineTo(x + r*Math.cos((18+i*72)*Math.PI/180),
+                 y - r*Math.sin((18+i*72)*Math.PI/180));
+      ctx.lineTo(x + r/2*Math.cos((54+i*72)*Math.PI/180),
+                 y - r/2*Math.sin((54+i*72)*Math.PI/180));
+    }
+    ctx.closePath(); ctx.fill();
+  }
+  for(let i=0;i<40;i++){
+    drawStar(Math.random()*W,Math.random()*H,8+Math.random()*10,
+      ['#ffd6e8','#a8d5ba','#cbe8ff','#fff6b7'][Math.floor(Math.random()*4)]);
+  }
 
   ctx.fillStyle='#355c7d'; 
   ctx.font='72px "Great Vibes"';
@@ -277,7 +281,7 @@ downloadBtn.addEventListener('click',async()=>{
     const dx=marginX + (boxW - iw)/2;
     const dy=y + (boxH - ih)/2;
     ctx.save();
-    ctx.filter='contrast(95%) brightness(105%) saturate(90%) sepia(10%)';
+    ctx.filter='contrast(100%) brightness(105%) saturate(95%)';
     ctx.drawImage(img,dx,dy,iw,ih);
     ctx.restore();
   }
