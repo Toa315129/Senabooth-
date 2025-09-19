@@ -1,4 +1,4 @@
-<!doctype html>
+<<!doctype html>
 <html lang="th">
 <head>
 <meta charset="utf-8">
@@ -35,7 +35,10 @@ html,body{
   overflow:hidden;
 }
 .header{text-align:center;margin-bottom:20px;}
-.header .brand{font-weight:400;font-size:56px;color:var(--text);text-shadow:1px 1px 0 var(--pink);}
+.header .brand{
+  font-weight:400;font-size:56px;color:var(--text);
+  text-shadow:1px 1px 0 var(--pink);
+}
 .main{display:flex;gap:18px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;}
 .camera-wrap{flex:1 1 360px;min-width:300px;display:flex;flex-direction:column;align-items:center;gap:12px;}
 .preview{
@@ -149,27 +152,23 @@ const thumbs=[document.getElementById('t1'),document.getElementById('t2'),docume
 
 let stream=null,useFront=true,captures=[null,null,null];
 
-if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-  alert('เบราว์เซอร์นี้ไม่รองรับการเปิดกล้อง');
-  throw new Error('getUserMedia not supported');
-}
-
+// เปิดกล้อง
 async function startCamera(){
-  if(stream){stream.getTracks().forEach(t=>t.stop()); stream=null;}
+  if(stream){stream.getTracks().forEach(t=>t.stop());}
   try{
     stream=await navigator.mediaDevices.getUserMedia({
       video:{facingMode:useFront?'user':'environment'},audio:false});
     video.srcObject=stream; await video.play();
   }catch(e){
-    console.error('Camera error:', e);
-    alert('ไม่สามารถเปิดกล้องได้:\n'+e.name+' - '+e.message+
-          '\n\nต้องรันบน HTTPS หรือ localhost และอนุญาตกล้อง');
+    alert('ไม่สามารถเปิดกล้องได้: '+e.message+'\n\nต้องรันบน HTTPS หรือ localhost และอนุญาตกล้อง');
   }
 }
 await startCamera();
 
+// สลับกล้อง
 switchBtn.addEventListener('click',async()=>{useFront=!useFront;await startCamera();});
 
+// จับภาพจากวิดีโอ
 function captureFrame(){
   const vw=video.videoWidth,vh=video.videoHeight;
   const c=document.createElement('canvas'); c.width=vw; c.height=vh;
@@ -179,15 +178,21 @@ function captureFrame(){
   return c.toDataURL('image/png');
 }
 
+// นับถอยหลัง
 function showCount(num){countdownEl.textContent=num;}
 function hideCount(){countdownEl.textContent='';}
+
+// เอฟเฟกต์แฟลช
 function doFlash(){
   snap.currentTime=0; snap.play().catch(()=>{});
   flash.classList.add('show');
   setTimeout(()=>flash.classList.remove('show'),170);
 }
+
+// โหลดรูป
 function loadImage(src){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src;});}
 
+// ถ่าย 3 ช็อต
 async function takeSequence(){
   captures=[null,null,null];
   thumbs.forEach((t,i)=> t.innerHTML=`<span style="opacity:.4;color:var(--text)">${i+1}</span>`);
@@ -203,20 +208,19 @@ async function takeSequence(){
   retakeBtn.disabled=false; downloadBtn.disabled=false; shutter.style.pointerEvents='';
 }
 shutter.addEventListener('click',takeSequence);
+
+// ถ่ายใหม่
 retakeBtn.addEventListener('click',()=>{
   captures=[null,null,null];
   thumbs.forEach((t,i)=> t.innerHTML=`<span style="opacity:.4;color:var(--text)">${i+1}</span>`);
   downloadBtn.disabled=true;
 });
 
+// อัปโหลด 3 รูป
 uploadBtn.addEventListener('click',()=>fileInput.click());
-
 fileInput.addEventListener('change',async(e)=>{
   const files=[...e.target.files].slice(0,3);
-  if(files.length<3){
-    alert('กรุณาเลือก 3 รูป');
-    return;
-  }
+  if(files.length<3){alert('กรุณาเลือก 3 รูป');return;}
   captures=[null,null,null];
   for(let i=0;i<3;i++){
     const file=files[i];
@@ -232,9 +236,10 @@ fileInput.addEventListener('change',async(e)=>{
     });
   }
   retakeBtn.disabled=false;
-  downloadBtn.disabled=false?false:true;
+  downloadBtn.disabled=false;
 });
 
+// ดาวน์โหลดกรอบสุดท้าย
 downloadBtn.addEventListener('click',async()=>{
   if(!captures[0]) return alert('ยังไม่ได้ถ่าย/อัปโหลดรูป');
   const W=1200,H=1800;
@@ -258,17 +263,18 @@ downloadBtn.addEventListener('click',async()=>{
   ctx.closePath();
   ctx.fill();
 
+  // หัวข้อ
   ctx.fillStyle='#355c7d'; 
   ctx.font='72px "Great Vibes"';
   ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillText('Sena booth', W/2, 100);
 
+  // วางภาพ 3 ช่อง
   const marginX=80, gap=36, topY=180;
   const innerW=W - marginX*2;
   const availableH = H - topY - 140;
   const boxH = Math.floor((availableH - gap*2)/3);
   const boxW = innerW;
-
   for(let i=0;i<3;i++){
     const y = topY + i*(boxH + gap);
     const img=await loadImage(captures[i]);
@@ -282,10 +288,12 @@ downloadBtn.addEventListener('click',async()=>{
     ctx.restore();
   }
 
+  // ข้อความล่าง
   ctx.fillStyle='#355c7d';
   ctx.font='28px "Great Vibes"';
   ctx.fillText('@saphasena68', W/2, H-50);
 
+  // ดาวน์โหลดไฟล์
   const a=document.createElement('a');
   a.href=c.toDataURL('image/png');
   a.download='Sena_booth_3shots.png';
