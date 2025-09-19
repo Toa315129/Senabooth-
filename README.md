@@ -1,1 +1,297 @@
-# Senabooth-
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sena booth</title>
+
+<!-- ฟอนต์เขียนติดกัน -->
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#ffffff;
+  --green:#a8d5ba;
+  --blue:#b8d9f4;
+  --pink:#f7c6d9;
+  --muted:#f0f4f8;
+  --text:#355c7d;
+}
+*{box-sizing:border-box}
+html,body{
+  height:100%;margin:0;
+  background:var(--bg);
+  font-family:"Great Vibes",cursive;
+  display:flex;align-items:center;justify-content:center;padding:18px;
+}
+.container{
+  width:100%;max-width:960px;
+  background:var(--blue);
+  border-radius:20px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.12);
+  padding:18px;
+  border:6px solid var(--pink);
+  position:relative;
+  overflow:hidden;
+}
+.header{text-align:center;margin-bottom:20px;}
+.header .brand{font-weight:400;font-size:56px;color:var(--text);text-shadow:1px 1px 0 var(--pink);}
+.main{display:flex;gap:18px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;}
+.camera-wrap{flex:1 1 360px;min-width:300px;display:flex;flex-direction:column;align-items:center;gap:12px;}
+.preview{
+  width:100%;border-radius:14px;overflow:hidden;
+  background:var(--muted);border:6px solid var(--green);
+  box-shadow:0 6px 18px rgba(0,0,0,0.08);
+  position:relative;aspect-ratio:3/4;
+}
+#video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:block;}
+.countdown{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:4.2rem;color:var(--pink);text-shadow:0 4px 12px rgba(0,0,0,0.3);
+  pointer-events:none;
+}
+.flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity 0.18s}
+.flash.show{opacity:0.85}
+.controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+.btn{
+  padding:10px 14px;border-radius:10px;border:2px solid var(--green);
+  background:var(--pink);color:var(--text);font-weight:700;cursor:pointer;
+  box-shadow:0 4px 10px rgba(16,24,40,0.05);transition:all 0.2s ease;
+  font-family:sans-serif;
+}
+.btn:hover:not(:disabled){background:var(--green);color:#fff;}
+.btn:disabled{opacity:0.55;cursor:not-allowed}
+.shutter{
+  width:84px;height:84px;border-radius:50%;background:#fff;border:6px solid var(--pink);
+  box-shadow:0 10px 20px rgba(0,0,0,0.12);
+  display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:all 0.2s;
+}
+.shutter:hover{background:var(--green);}
+.gallery{width:300px;min-width:260px;flex:0 0 300px;display:flex;flex-direction:column;gap:12px;align-items:center;}
+.thumbs{display:flex;gap:8px;width:100%;justify-content:space-between}
+.thumb{
+  width:32%;aspect-ratio:3/4;border-radius:10px;overflow:hidden;background:#fff;
+  border:3px solid var(--green);display:flex;align-items:center;justify-content:center;
+}
+.thumb img{width:100%;height:100%;object-fit:cover}
+@media(min-width:900px){
+  .camera-wrap{flex:1 1 60%}
+  .gallery{flex:0 0 36%;}
+}
+.note{font-family:sans-serif;font-size:14px;color:var(--text);text-align:center;margin-top:6px}
+
+/* ⭐ ตกแต่งหลายเหลี่ยม */
+.decoration{
+  position:absolute;z-index:0;
+  background:var(--pink);
+  clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+  width:120px;height:120px;
+  opacity:0.6;
+}
+.dec1{top:-30px;left:-30px;background:var(--pink);}
+.dec2{bottom:-40px;right:-40px;background:var(--green);}
+.dec3{top:20px;right:80px;background:var(--blue);}
+</style>
+</head>
+<body>
+<div class="container" role="application" aria-label="SENA Photobooth">
+  <div class="decoration dec1"></div>
+  <div class="decoration dec2"></div>
+  <div class="decoration dec3"></div>
+  
+  <div class="header"><div class="brand">Sena booth</div></div>
+  <div class="main">
+    <div class="camera-wrap">
+      <div class="preview" id="preview">
+        <video id="video" autoplay playsinline></video>
+        <div class="countdown" id="countdown"></div>
+        <div class="flash" id="flash"></div>
+      </div>
+
+      <div class="controls">
+        <div class="shutter" id="shutter" aria-label="Shutter button" title="ถ่ายภาพ"></div>
+        <button class="btn" id="retake" disabled>ถ่ายใหม่</button>
+        <button class="btn" id="switch">สลับกล้อง</button>
+        <button class="btn" id="upload">อัปโหลด</button>
+        <button class="btn" id="download" disabled>ดาวน์โหลด</button>
+        <input type="file" id="fileInput" accept="image/*" multiple hidden>
+      </div>
+      <div class="note">กดชัตเตอร์ครั้งเดียว → ถ่าย 3 ช็อต (3 วินาที) หรืออัปโหลด 3 รูป</div>
+    </div>
+
+    <div class="gallery" aria-live="polite">
+      <div style="font-weight:700;color:var(--text);font-family:sans-serif">ตัวอย่าง 3 ภาพ</div>
+      <div class="thumbs" id="thumbs">
+        <div class="thumb" id="t1"><span style="opacity:.4;color:var(--text)">1</span></div>
+        <div class="thumb" id="t2"><span style="opacity:.4;color:var(--text)">2</span></div>
+        <div class="thumb" id="t3"><span style="opacity:.4;color:var(--text)">3</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<audio id="snap" src="https://cdn.jsdelivr.net/gh/naptha/talkdemo/snap.mp3" preload="auto"></audio>
+
+<script>
+(async()=>{
+const video=document.getElementById('video');
+const shutter=document.getElementById('shutter');
+const retakeBtn=document.getElementById('retake');
+const switchBtn=document.getElementById('switch');
+const downloadBtn=document.getElementById('download');
+const uploadBtn=document.getElementById('upload');
+const fileInput=document.getElementById('fileInput');
+const countdownEl=document.getElementById('countdown');
+const flash=document.getElementById('flash');
+const snap=document.getElementById('snap');
+const thumbs=[document.getElementById('t1'),document.getElementById('t2'),document.getElementById('t3')];
+
+let stream=null,useFront=true,captures=[null,null,null];
+
+if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+  alert('เบราว์เซอร์นี้ไม่รองรับการเปิดกล้อง');
+  throw new Error('getUserMedia not supported');
+}
+
+async function startCamera(){
+  if(stream){stream.getTracks().forEach(t=>t.stop()); stream=null;}
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:useFront?'user':'environment'},audio:false});
+    video.srcObject=stream; await video.play();
+  }catch(e){
+    console.error('Camera error:', e);
+    alert('ไม่สามารถเปิดกล้องได้:\n'+e.name+' - '+e.message+
+          '\n\nต้องรันบน HTTPS หรือ localhost และอนุญาตกล้อง');
+  }
+}
+await startCamera();
+
+switchBtn.addEventListener('click',async()=>{useFront=!useFront;await startCamera();});
+
+function captureFrame(){
+  const vw=video.videoWidth,vh=video.videoHeight;
+  const c=document.createElement('canvas'); c.width=vw; c.height=vh;
+  const ctx=c.getContext('2d');
+  ctx.translate(c.width,0); ctx.scale(-1,1);
+  ctx.drawImage(video,0,0,vw,vh);
+  return c.toDataURL('image/png');
+}
+
+function showCount(num){countdownEl.textContent=num;}
+function hideCount(){countdownEl.textContent='';}
+function doFlash(){
+  snap.currentTime=0; snap.play().catch(()=>{});
+  flash.classList.add('show');
+  setTimeout(()=>flash.classList.remove('show'),170);
+}
+function loadImage(src){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src;});}
+
+async function takeSequence(){
+  captures=[null,null,null];
+  thumbs.forEach((t,i)=> t.innerHTML=`<span style="opacity:.4;color:var(--text)">${i+1}</span>`);
+  retakeBtn.disabled=true; downloadBtn.disabled=true; shutter.style.pointerEvents='none';
+  for(let i=0;i<3;i++){
+    for(let s=3;s>=1;s--){showCount(s);await new Promise(r=>setTimeout(r,1000));}
+    hideCount(); doFlash();
+    const data=captureFrame();
+    captures[i]=data;
+    thumbs[i].innerHTML=`<img src="${data}" alt="shot ${i+1}">`;
+    if(i<2) await new Promise(r=>setTimeout(r,1000));
+  }
+  retakeBtn.disabled=false; downloadBtn.disabled=false; shutter.style.pointerEvents='';
+}
+shutter.addEventListener('click',takeSequence);
+retakeBtn.addEventListener('click',()=>{
+  captures=[null,null,null];
+  thumbs.forEach((t,i)=> t.innerHTML=`<span style="opacity:.4;color:var(--text)">${i+1}</span>`);
+  downloadBtn.disabled=true;
+});
+
+uploadBtn.addEventListener('click',()=>fileInput.click());
+
+fileInput.addEventListener('change',async(e)=>{
+  const files=[...e.target.files].slice(0,3);
+  if(files.length<3){
+    alert('กรุณาเลือก 3 รูป');
+    return;
+  }
+  captures=[null,null,null];
+  for(let i=0;i<3;i++){
+    const file=files[i];
+    const reader=new FileReader();
+    await new Promise((res,rej)=>{
+      reader.onload=()=>{
+        captures[i]=reader.result;
+        thumbs[i].innerHTML=`<img src="${reader.result}" alt="uploaded ${i+1}">`;
+        res();
+      };
+      reader.onerror=rej;
+      reader.readAsDataURL(file);
+    });
+  }
+  retakeBtn.disabled=false;
+  downloadBtn.disabled=false?false:true;
+});
+
+downloadBtn.addEventListener('click',async()=>{
+  if(!captures[0]) return alert('ยังไม่ได้ถ่าย/อัปโหลดรูป');
+  const W=1200,H=1800;
+  const c=document.createElement('canvas'); c.width=W; c.height=H;
+  const ctx=c.getContext('2d');
+  ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,W,H);
+
+  // ⭐ ตกแต่งดาวในกรอบ
+  ctx.fillStyle='#f7c6d9';
+  ctx.beginPath();
+  ctx.moveTo(600,40);
+  ctx.lineTo(630,120);
+  ctx.lineTo(720,120);
+  ctx.lineTo(650,170);
+  ctx.lineTo(680,260);
+  ctx.lineTo(600,200);
+  ctx.lineTo(520,260);
+  ctx.lineTo(550,170);
+  ctx.lineTo(480,120);
+  ctx.lineTo(570,120);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle='#355c7d'; 
+  ctx.font='72px "Great Vibes"';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('Sena booth', W/2, 100);
+
+  const marginX=80, gap=36, topY=180;
+  const innerW=W - marginX*2;
+  const availableH = H - topY - 140;
+  const boxH = Math.floor((availableH - gap*2)/3);
+  const boxW = innerW;
+
+  for(let i=0;i<3;i++){
+    const y = topY + i*(boxH + gap);
+    const img=await loadImage(captures[i]);
+    const scale=Math.min(boxW/img.width, boxH/img.height);
+    const iw=img.width*scale, ih=img.height*scale;
+    const dx=marginX + (boxW - iw)/2;
+    const dy=y + (boxH - ih)/2;
+    ctx.save();
+    ctx.filter='contrast(95%) brightness(105%) saturate(90%) sepia(10%)';
+    ctx.drawImage(img,dx,dy,iw,ih);
+    ctx.restore();
+  }
+
+  ctx.fillStyle='#355c7d';
+  ctx.font='28px "Great Vibes"';
+  ctx.fillText('@saphasena68', W/2, H-50);
+
+  const a=document.createElement('a');
+  a.href=c.toDataURL('image/png');
+  a.download='Sena_booth_3shots.png';
+  a.click();
+});
+})();
+</script>
+</body>
+</html>
