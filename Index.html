@@ -10,9 +10,74 @@
 
 <style>
 :root{
-  --bg:#ffffff;
-  --green:#3ea67a;
-  --muted:#e6e9ee;
+  --bg:#fdfdfd;         /* ขาว */
+  --green:#a8d5ba;      /* เขียวพาสเทล */
+  --blue:#b8d9f4;       /* น้ำเงินพาสเทล */
+  --pink:#f7c6d9;       /* ชมพูพาสเทล */
+  --muted:#eaeef3;      /* เทาอ่อน */
+  --text:#355c7d;       /* น้ำเงินเข้มสำหรับตัวหนังสือ */
+}
+
+/* background ทั้งหน้า */
+html,body{
+  background:var(--bg);
+}
+
+/* กรอบใหญ่ */
+.container{
+  background:var(--blue);
+  border-radius:20px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.08);
+  padding:18px;
+  border:6px solid var(--pink);
+}
+
+/* หัวข้อ */
+.header .brand{
+  font-size:52px;
+  color:var(--text);
+  text-shadow:1px 1px 0 var(--pink);
+}
+
+/* กล้อง preview */
+.preview{
+  background:var(--muted);
+  border:6px solid var(--green);
+  border-radius:20px;
+  box-shadow:0 6px 14px rgba(0,0,0,0.1);
+}
+
+/* ปุ่ม */
+.btn{
+  border:2px solid var(--green);
+  color:var(--text);
+  background:var(--pink);
+  font-weight:600;
+}
+.btn:hover:not(:disabled){
+  background:var(--green);
+  color:#fff;
+}
+
+/* ปุ่มกลมชัตเตอร์ */
+.shutter{
+  border:6px solid var(--pink);
+  background:var(--bg);
+}
+.shutter:hover{background:var(--green);}
+
+/* กรอบรูปเล็ก */
+.thumb{
+  border:3px solid var(--pink);
+  background:var(--bg);
+  border-radius:12px;
+}
+
+/* note ด้านล่าง */
+.note{
+  color:var(--text);
+  font-size:15px;
+}
 }
 *{box-sizing:border-box}
 html,body{
@@ -212,7 +277,6 @@ fileInput.addEventListener('change',async(e)=>{
     });
   }
   retakeBtn.disabled=false;
-  downloadBtn.disabled=false? true:false;
   downloadBtn.disabled=false;
 });
 
