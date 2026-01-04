@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>SENA PHOTOBOOTH | OS 2.0</title>
+    <title>SENA PHOTOBOOTH | OS 2.1</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -101,6 +101,27 @@
         .blink-text { animation: blink 1.5s infinite; }
         @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
 
+        /* --- NEW SCREEN: FRAME SELECTION --- */
+        #screen-frames {
+            justify-content: center; align-items: center; background: #080808;
+            padding: 20px;
+        }
+        .frame-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+            width: 100%; max-width: 500px;
+        }
+        .btn-frame {
+            background: #111; border: 1px solid #444; color: #aaa;
+            padding: 20px; text-align: center; cursor: pointer;
+            font-family: var(--font-code); font-size: 1.2rem;
+            transition: 0.2s; border-radius: 4px;
+        }
+        .btn-frame:hover, .btn-frame:active {
+            background: #fff; color: #000; border-color: #fff;
+            box-shadow: 0 0 15px rgba(255,255,255,0.5);
+        }
+        .btn-frame.special { grid-column: span 2; border-color: #fff; color: #fff; }
+
         /* --- SCREEN: CAMERA UI --- */
         #screen-cam {
             justify-content: space-between; background: #000;
@@ -191,6 +212,8 @@
         @media (max-width: 600px) {
             .main-title { font-size: 2.5rem; }
             .btn-coin { padding: 15px 30px; font-size: 1.5rem; }
+            .frame-grid { grid-template-columns: 1fr; }
+            .btn-frame.special { grid-column: span 1; }
         }
 
     </style>
@@ -212,6 +235,17 @@
                 <span class="blink-text">INSERT COIN</span>
             </button>
             <p style="margin-top:20px; font-family:var(--font-code); color:#666;">CREDIT 0/1</p>
+        </div>
+
+        <div id="screen-frames" class="screen">
+            <h2 style="font-family:var(--font-code); color:#fff; margin-bottom:30px;">SELECT FRAME LAYOUT</h2>
+            <div class="frame-grid">
+                <div class="btn-frame" onclick="OS.selectFrame('polaroid')">[1] POLAROID</div>
+                <div class="btn-frame" onclick="OS.selectFrame('strip')">[2] PHOTO STRIP</div>
+                <div class="btn-frame" onclick="OS.selectFrame('love')">[3] I ❤️ SENA</div>
+                <div class="btn-frame" onclick="OS.selectFrame('system')">[4] SYSTEM UI</div>
+                <div class="btn-frame special" onclick="OS.selectFrame('black')">[5] BLACK FRAME</div>
+            </div>
         </div>
 
         <div id="screen-cam" class="screen">
@@ -265,13 +299,20 @@
             };
 
             // STATE
-            let s = { filter: 'color', photos: [], stream: null, processing: false };
+            let s = { 
+                filter: 'color', 
+                frame: 'polaroid', // Default
+                photos: [], 
+                stream: null, 
+                processing: false 
+            };
 
             // DOM
             const D = {
                 screens: {
                     boot: document.getElementById('screen-boot'),
                     home: document.getElementById('screen-home'),
+                    frames: document.getElementById('screen-frames'),
                     cam: document.getElementById('screen-cam'),
                     res: document.getElementById('screen-result')
                 },
@@ -310,7 +351,7 @@
 
             // 1. BOOT SEQUENCE
             window.onload = async () => {
-                const logs = ["SENA OS v2.0", "CHECKING CAMERA...", "LOADING UI...", "SYSTEM READY."];
+                const logs = ["SENA OS v2.1", "CHECKING CAMERA...", "LOADING FRAMES...", "SYSTEM READY."];
                 for(let l of logs) {
                     D.log.innerHTML += l + "<br>";
                     await new Promise(r => setTimeout(r, 400));
@@ -330,10 +371,19 @@
             // ACTIONS
             async function start() {
                 Aud.play('coin');
+                // Go to Frame Selection first
+                D.screens.home.classList.remove('active');
+                D.screens.frames.classList.add('active');
+            }
+
+            async function selectFrame(type) {
+                s.frame = type;
+                Aud.play('beep');
+                
                 try {
                     s.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: C.w, height: C.h } });
                     D.video.srcObject = s.stream;
-                    D.screens.home.classList.remove('active');
+                    D.screens.frames.classList.remove('active');
                     D.screens.cam.classList.add('active');
                 } catch(e) { alert("Camera Access Required"); }
             }
@@ -396,11 +446,9 @@
                     cvs.width = D.video.videoWidth; cvs.height = D.video.videoHeight;
                     const ctx = cvs.getContext('2d');
 
-                    // Mirror
                     ctx.translate(cvs.width, 0); ctx.scale(-1, 1);
                     ctx.drawImage(D.video, 0, 0);
 
-                    // Apply Filter Logic (Pixel manipulation for realistic film)
                     if(s.filter !== 'color') {
                         const id = ctx.getImageData(0,0,cvs.width,cvs.height);
                         const d = id.data;
@@ -410,7 +458,6 @@
                                 const v = 0.299*R + 0.587*G + 0.114*B;
                                 d[i]=d[i+1]=d[i+2]=v;
                             } else if(s.filter === 'film') {
-                                // Sepia + Noise
                                 d[i] = R*0.393 + G*0.769 + B*0.189;
                                 d[i+1] = R*0.349 + G*0.686 + B*0.168;
                                 d[i+2] = R*0.272 + G*0.534 + B*0.131;
@@ -420,7 +467,6 @@
                         }
                         ctx.putImageData(id, 0, 0);
                     }
-
                     s.photos.push(cvs);
                     setTimeout(r, 200);
                 });
@@ -429,25 +475,61 @@
             function process() {
                 if(s.stream) s.stream.getTracks().forEach(t=>t.stop());
 
-                const stripW = C.stripW;
-                const photoW = 540; const photoH = (photoW*3)/4;
-                const gap = 25; const head = 150; const foot = 100;
-                const H = head + (photoH*C.shots) + (gap*(C.shots-1)) + foot;
+                // FRAME LOGIC
+                const f = s.frame;
+                let stripW = C.stripW; // 600
+                let photoW, photoH, gap, head, foot, H;
+                let bgColor = '#f8f8f8';
+                let textColor = '#000';
+                
+                // Config based on Frame Selection
+                if(f === 'strip') {
+                    // Vertical Long Strip
+                    stripW = 400;
+                    photoW = 360; photoH = (photoW*3)/4; 
+                    gap = 20; head = 100; foot = 100;
+                    H = head + (photoH*C.shots) + (gap*(C.shots-1)) + foot;
+                } else {
+                    // Standard Card (Polaroid, Love, System, Black)
+                    photoW = 540; photoH = (photoW*3)/4;
+                    gap = 25; head = 150; foot = 100;
+                    H = head + (photoH*C.shots) + (gap*(C.shots-1)) + foot;
+                }
+
+                if(f === 'black') { bgColor = '#111'; textColor = '#fff'; }
+                if(f === 'system') { bgColor = '#000'; textColor = '#0f0'; }
 
                 D.canvas.width = stripW; D.canvas.height = H;
                 const ctx = D.canvas.getContext('2d');
 
-                // 1. BG
-                ctx.fillStyle = '#f8f8f8'; ctx.fillRect(0,0,stripW,H);
+                // 1. BACKGROUND
+                ctx.fillStyle = bgColor; ctx.fillRect(0,0,stripW,H);
 
-                // 2. HEADER
-                ctx.fillStyle = '#000'; ctx.textAlign = 'center';
-                ctx.font = 'bold 50px "DM Sans"';
-                ctx.fillText('SENA', stripW/2, 80);
-                ctx.font = '700 30px "DM Sans"';
-                ctx.fillText('PHOTOBOOTH', stripW/2, 120);
+                // 2. HEADER TEXT
+                ctx.textAlign = 'center';
+                
+                if(f === 'love') {
+                    // I ❤️ SENA
+                    ctx.fillStyle = '#000';
+                    ctx.font = 'bold 50px "DM Sans"';
+                    ctx.fillText('I ❤️ SENA', stripW/2, 90);
+                } else if(f === 'system') {
+                    // SYSTEM STYLE
+                    ctx.fillStyle = '#0f0';
+                    ctx.font = '40px "VT323"';
+                    ctx.fillText('SYS.LOG: CAPTURED', stripW/2, 80);
+                    ctx.strokeStyle = '#0f0'; ctx.lineWidth = 2;
+                    ctx.strokeRect(10,10,stripW-20,H-20); // Border
+                } else {
+                    // STANDARD / BLACK / STRIP
+                    ctx.fillStyle = textColor;
+                    ctx.font = 'bold 40px "DM Sans"';
+                    ctx.fillText('SENA', stripW/2, f==='strip'?50:80);
+                    ctx.font = '700 24px "DM Sans"';
+                    ctx.fillText('PHOTOBOOTH', stripW/2, f==='strip'?80:120);
+                }
 
-                // 3. PHOTOS
+                // 3. DRAW PHOTOS
                 let y = head;
                 s.photos.forEach(p => {
                     const sR = p.width/p.height; const dR=4/3;
@@ -455,15 +537,26 @@
                     if(sR > dR) { sh=p.height; sw=sh*dR; sx=(p.width-sw)/2; sy=0; }
                     else { sw=p.width; sh=sw/dR; sx=0; sy=(p.height-sh)/2; }
                     
+                    // Border for System Mode
+                    if(f === 'system') {
+                         ctx.strokeStyle = '#0f0'; ctx.lineWidth=2;
+                         ctx.strokeRect((stripW-photoW)/2 - 5, y - 5, photoW + 10, photoH + 10);
+                    }
+                    
                     ctx.drawImage(p, sx, sy, sw, sh, (stripW-photoW)/2, y, photoW, photoH);
                     y += photoH + gap;
                 });
 
                 // 4. FOOTER
                 const quote = C.quotes[Math.floor(Math.random()*C.quotes.length)];
-                ctx.font = '20px "VT323"'; ctx.textAlign = 'center'; ctx.fillStyle = '#666';
+                ctx.font = '20px "VT323"'; ctx.textAlign = 'center'; ctx.fillStyle = (f==='system'?'#0f0':'#666');
+                if(f==='black') ctx.fillStyle = '#888';
+                
                 const date = new Date().toLocaleDateString('en-GB');
-                ctx.fillText(date + "  •  " + quote, stripW/2, H - 40);
+                let footerText = date + "  •  " + quote;
+                if(f === 'system') footerText = `> ${date} // END_PROCESS`;
+                
+                ctx.fillText(footerText, stripW/2, H - 40);
 
                 // Finish
                 D.final.src = D.canvas.toDataURL('image/jpeg', 0.95);
@@ -481,7 +574,7 @@
                 document.body.removeChild(a);
             }
 
-            return { start, toggleGrid, filter, snap, download };
+            return { start, selectFrame, toggleGrid, filter, snap, download };
         })();
     </script>
 </body>
