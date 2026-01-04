@@ -216,7 +216,7 @@
             <h2 style="font-family:var(--font-code); color:#fff; margin-bottom:30px;">SELECT FRAME</h2>
             <div class="frame-grid">
                 <div class="btn-frame" onclick="OS.selectFrame('polaroid')"><span>[1] POLAROID</span></div>
-                <div class="btn-frame" onclick="OS.selectFrame('disco')"><span>[2] DISCO BALL 🪩</span></div>
+                <div class="btn-frame" onclick="OS.selectFrame('disco')"><span>[2] DISCO BALL ✨</span></div>
                 <div class="btn-frame" onclick="OS.selectFrame('love')"><span>[3] I ❤️ SENA</span></div>
                 <div class="btn-frame" onclick="OS.selectFrame('system')"><span>[4] SYSTEM UI</span></div>
                 <div class="btn-frame special" onclick="OS.selectFrame('black')"><span>[5] BLACK FRAME</span></div>
@@ -486,14 +486,20 @@
                 ctx.textAlign = 'center';
                 
                 if(f === 'love') {
-                    // STYLE: I❤️SENA
+                    // STYLE: I ❤️ SENA
                     // White Text with Red Heart
                     ctx.fillStyle = '#000';
                     ctx.font = 'bold 60px "DM Sans"';
-                    ctx.fillText('I ❤️ SENANUKUL', stripW/2 - 90, 100);
+                    ctx.fillText('I', stripW/2 - 90, 100);
                     
+                    ctx.fillStyle = '#FF0000'; // RED HEART
+                    ctx.font = '70px "DM Sans"';
+                    ctx.fillText('♥', stripW/2 - 50, 100);
                     
-                    
+                    ctx.fillStyle = '#000';
+                    ctx.font = 'bold 60px "DM Sans"';
+                    ctx.fillText('SENA', stripW/2 + 100, 100);
+                } 
                 else if (f === 'disco') {
                     // DISCO HEADER: Text with Shadow
                     ctx.shadowColor = "rgba(0,0,0,0.8)";
@@ -502,7 +508,7 @@
                     ctx.font = '800 50px "DM Sans"';
                     ctx.fillText('🪩SENA🪩', stripW/2, 80);
                     ctx.font = '700 24px "DM Sans"';
-                    ctx.fillText('DISCOPHOTOBOOTH', stripW/2, 120);
+                    ctx.fillText('DISCO BOOTH', stripW/2, 120);
                     ctx.shadowBlur = 0; // Reset shadow
                 }
                 else if(f === 'system') {
